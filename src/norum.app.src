@@ -6,11 +6,13 @@
   {modules, []},
   {applications, [
                   kernel,
-                  stdlib,
+                  stdlib,                  
                   cowboy,
                   cowlib,
                   ranch,
-                  erlydtl
+                  erlydtl,
+                  sync,
+                  lager
                  ]},
   {mod, { norum_app, []}},
   {env, []}

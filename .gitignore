@@ -1,5 +1,6 @@
 ebin
 deps
-rel
 _rel
 norum.d
+relx
+.erlang.mk

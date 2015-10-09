@@ -12,7 +12,8 @@ init(_, Req, _Opts) ->
 	{ok, Req, #state{}}.
 
 handle(Req, State=#state{}) ->
-	{ok, [Content]} = home_dtl:render([]),
+	lager:log(debug, ?MODULE, "~p: in home", [?MODULE]),
+	{ok, Content} = home_dtl:render([]),
 	{ok, Req2} = cowboy_req:reply(200, [], Content, Req),
 	{ok, Req2, State}.
 
