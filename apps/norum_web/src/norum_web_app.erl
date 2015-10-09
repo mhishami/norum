@@ -5,6 +5,7 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
+	application:ensure_all_started(cowboy),
 
 	Dispatch = cowboy_router:compile([
 		{'_', [

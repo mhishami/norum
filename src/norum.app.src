@@ -1,18 +1,16 @@
 {application, norum,
  [
   {description, "Reactive Forum App"},
-  {vsn, "0.0.1"},
+  {vsn, "0.1.0"},
   {registered, []},
   {modules, []},
   {applications, [
                   kernel,
-                  stdlib,                  
-                  cowboy,
-                  cowlib,
-                  ranch,
-                  erlydtl,
+                  stdlib,
+                  crypto,
                   sync,
-                  lager
+                  lager,
+                  goldrush
                  ]},
   {mod, { norum_app, []}},
   {env, []}

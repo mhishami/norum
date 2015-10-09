@@ -1,0 +1,17 @@
+{application, norum_web, [
+	{description, "Norum Web Application"},
+	{vsn, "0.1.0"},
+	{modules, []},
+	{registered, [norum_web_sup]},
+	{applications, [
+					kernel,
+					stdlib,
+					crypto, 
+					cowboy, 
+					cowlib, 
+					ranch, 
+					erlydtl, 
+					merl
+	]},
+	{mod, {norum_web_app, []}}
+]}.
