@@ -9,13 +9,13 @@
 }).
 
 init(_, Req, _Opts) ->
-	{ok, Req, #state{}}.
+    {ok, Req, #state{}}.
 
 handle(Req, State=#state{}) ->
-	lager:log(debug, ?MODULE, "~p: in home", [?MODULE]),
-	{ok, Content} = home_dtl:render([]),
-	{ok, Req2} = cowboy_req:reply(200, [], Content, Req),
-	{ok, Req2, State}.
+    lager:log(debug, ?MODULE, "~p: in home", [?MODULE]),
+    {ok, Content} = home_dtl:render([]),
+    {ok, Req2} = cowboy_req:reply(200, [], Content, Req),
+    {ok, Req2, State}.
 
 terminate(_Reason, _Req, _State) ->
-	ok.
+    ok.
