@@ -1,0 +1,17 @@
+{application, norum,
+ [
+  {description, ""},
+  {vsn, "0.0.1"},
+  {registered, []},
+  {modules, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  cowboy,
+                  cowlib,
+                  ranch,
+                  erlydtl
+                 ]},
+  {mod, { norum_app, []}},
+  {env, []}
+ ]}.
