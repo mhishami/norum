@@ -1,6 +1,6 @@
 {application, norum,
  [
-  {description, ""},
+  {description, "Reactive Forum App"},
   {vsn, "0.0.1"},
   {registered, []},
   {modules, []},
