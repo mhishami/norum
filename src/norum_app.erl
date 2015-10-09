@@ -12,9 +12,10 @@
 start(_StartType, _StartArgs) ->
 	application:start(sync),
 	application:ensure_all_started(lager),
-	application:start(norum_db),
 	application:start(norum_session),
-
+	application:start(norum_db),
+	application:start(norum_web),
+	
 	Dispatch = cowboy_router:compile([
 		{'_', [
 			{"/static/[...]", cowboy_static, {priv_dir, norum, "static",
