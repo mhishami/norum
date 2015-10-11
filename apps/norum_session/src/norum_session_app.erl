@@ -5,7 +5,7 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
-	norum_session_sup:start_link().
+    norum_session_sup:start_link().
 
 stop(_State) ->
-	ok.
+    ok.
