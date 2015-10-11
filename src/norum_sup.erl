@@ -23,5 +23,9 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, { {one_for_one, 5, 10}, []} }.
+	Web = ?CHILD(norum_web_sup, supervisor),
+	Db = ?CHILD(norum_db_sup, supervisor),
+	Session = ?CHILD(norum_session_sup, supervisor),
+
+    {ok, { {one_for_one, 5, 10}, [Web, Db, Session]} }.
 

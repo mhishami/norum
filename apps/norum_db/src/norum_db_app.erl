@@ -5,7 +5,8 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
-	norum_db_sup:start_link().
+    application:ensure_all_started(mongodb),    
+    norum_db_sup:start_link().
 
 stop(_State) ->
-	ok.
+    ok.
