@@ -2,6 +2,8 @@
 -behaviour(gen_server).
 -author ('Hisham Ismail <mhishami@gmail.com').
 
+-include("norum_web.hrl").
+
 %% API.
 -export([start_link/0]).
 
@@ -20,10 +22,9 @@
 
 -spec start_link() -> {ok, pid()}.
 start_link() ->
-    gen_server:start_link(?MODULE, [], []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %% gen_server.
-
 init([]) ->
     {ok, [{port, Port}]} = application:get_env(norum, http),
     Dispatch = cowboy_router:compile([

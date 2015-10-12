@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 -author ('Hisham Ismail <mhishami@gmail.com').
 
--include("session.hrl").
+-include("norum_session.hrl").
 -include_lib("stdlib/include/qlc.hrl").
 
 %% API.

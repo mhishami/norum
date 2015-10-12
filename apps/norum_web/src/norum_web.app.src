@@ -11,7 +11,8 @@
                     cowlib, 
                     ranch, 
                     erlydtl, 
-                    merl
+                    merl,
+                    lager
     ]},
     {mod, {norum_web_app, []}}
 ]}.

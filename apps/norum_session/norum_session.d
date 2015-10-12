@@ -1,1 +1,1 @@
-src/session_worker.erl:: include/session.hrl; @touch $@
+src/session_worker.erl:: include/norum_session.hrl; @touch $@
