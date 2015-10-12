@@ -3,6 +3,7 @@
 
 
 -export ([gen_phrase_name/0]).
+-export ([gen_pnr/0]).
 
 -define (WOODS, [
             <<"Alder">>, <<"Ash">>, <<"Balsa">>, <<"Basswood">>, 
@@ -37,6 +38,23 @@
             <<"Chagan">>, <<"Kaindy">>, <<"Sasykkol">>, <<"Tengiz">>
     ]).
 
+-define (CAPS, [
+        <<"A">>, <<"B">>, <<"C">>, <<"D">>, <<"E">>, <<"F">>, <<"G">>,
+        <<"H">>, <<"I">>, <<"J">>, <<"K">>, <<"L">>, <<"M">>, <<"N">>,
+        <<"O">>, <<"P">>, <<"Q">>, <<"R">>, <<"S">>, <<"T">>, <<"U">>,
+        <<"V">>, <<"W">>, <<"X">>, <<"Y">>, <<"Z">>
+    ]).
+-define (LOWS, [
+        <<"a">>, <<"b">>, <<"c">>, <<"d">>, <<"e">>, <<"f">>, <<"g">>,
+        <<"h">>, <<"i">>, <<"j">>, <<"k">>, <<"l">>, <<"m">>, <<"n">>,
+        <<"o">>, <<"p">>, <<"q">>, <<"r">>, <<"s">>, <<"t">>, <<"u">>,
+        <<"v">>, <<"w">>, <<"x">>, <<"y">>, <<"z">>
+    ]).
+-define (NUMS, [
+        <<"0">>, <<"1">>, <<"2">>, <<"3">>, <<"4">>,
+        <<"5">>, <<"6">>, <<"7">>, <<"8">>, <<"9">>
+    ]).
+
 -define (wrandom(List), lists:nth(random:uniform(length(List)), List)).
 
 gen_phrase_name() ->
@@ -45,4 +63,19 @@ gen_phrase_name() ->
     W2 = ?wrandom(?METALS),
     W3 = ?wrandom(?LAKES),
     <<W1/binary, <<"-">>/binary, W2/binary, <<"-">>/binary, W3/binary>>.
+
+gen_pnr() ->
+    gen_pnr(random:uniform(3), <<>>).
+
+gen_pnr(1, Accu) when size(Accu) < 6 ->
+    P = ?wrandom(?CAPS),
+    gen_pnr(random:uniform(3), <<Accu/binary, P/binary>>);
+gen_pnr(2, Accu) when size(Accu) < 6 ->
+    P = ?wrandom(?LOWS),
+    gen_pnr(random:uniform(3), <<Accu/binary, P/binary>>);
+gen_pnr(3, Accu) when size(Accu) < 6 ->
+    P = ?wrandom(?NUMS),
+    gen_pnr(random:uniform(3), <<Accu/binary, P/binary>>);
+gen_pnr(_, Accu) -> Accu.
+
 

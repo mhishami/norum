@@ -46,7 +46,7 @@ process(<<"POST">>, <<"/auth/login">>, [_, PostVals], Req) ->
             case authenticate(Password, Data) of
                 ok ->
                     %% set session, and cookies etc.
-                    Sid = web_util:hash_password(word_util:gen_phrase_name()),
+                    Sid = web_util:hash_password(word_util:gen_pnr()),
                     % session_worker:set_cookies(Email, Sid),
                     session_worker:set_cookies(Sid, Email),
                     Req2 = cowboy_req:set_resp_cookie(<<"sid">>, Sid, 
