@@ -21,7 +21,9 @@
 %% API.
 -export([
         set_cookies/2,
-        get_cookies/1
+        get_cookies/1,
+        set_session/3,
+        get_session/1
     ]).
 
 %% ----------------------------------------------------------------------------
@@ -31,6 +33,12 @@ set_cookies(Key, Val) ->
 
 get_cookies(Key) ->
     gen_server:call(?MODULE, {get_cookies, Key}).
+
+set_session(Key, Val, Days) when is_integer(Days) ->
+    gen_server:call(?MODULE, {set_session, Key, Val, Days}).
+
+get_session(Key) ->
+    gen_server:call(?MODULE, {get_session, Key}).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -70,8 +78,33 @@ handle_call({set_cookies, Key, Val}, _From, State) ->
 handle_call({get_cookies, Key}, _From, State) ->
     F = fun() -> mnesia:read({norum_cookies, Key}) end,
     Reply = case catch mnesia:activity(transaction, F) of
-                {'EXIT', _} -> {error, undefined};
-                Val         -> {ok, Val}
+                {'EXIT', _} -> 
+                    {error, undefined};
+                [{norum_cookies, _K, V}] -> 
+                    {ok, V}
+            end,
+    {reply, Reply, State};
+
+handle_call({set_session, Key, Val, Days}, _From, State) ->
+    Expiry = date_util:add(date(), {days, Days}),
+    F = fun() ->
+            mnesia:write(#norum_session{key=Key, val=Val, expiry=Expiry})
+        end,
+    ok = mnesia:activity(transaction, F),
+    {reply, {ok, success}, State};
+
+handle_call({get_session, Key}, _From, State) ->
+    F = fun() -> mnesia:read({norum_session, Key}) end,
+    Reply = case catch mnesia:activity(transaction, F) of
+                {'EXIT', _} -> 
+                    {error, undefined};
+                [{norum_session, K, V, Exp, Ts}] -> 
+                    {ok, #{
+                        <<"key">> => K, 
+                        <<"val">> => V,
+                        <<"expiry">> => Exp,
+                        <<"timestamp">> => Ts
+                    }}
             end,
     {reply, Reply, State};
 

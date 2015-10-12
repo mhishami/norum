@@ -32,7 +32,8 @@ init([]) ->
             {"/static/[...]", cowboy_static, {priv_dir, norum_web, "static",
                 [{mimetypes, cow_mimetypes, all}]}},
             {"/", home_handler, []},
-            {"/auth/[...]", auth_handler, []}
+            {"/auth/[...]", auth_handler, []},
+            {"/adm/[...]", adm_handler, []}
         ]}
     ]),
     {ok, _} = cowboy:start_http(http, 100, [{port, Port}], [

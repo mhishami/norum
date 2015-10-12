@@ -15,7 +15,7 @@ init(_, Req, _Opts) ->
     {ok, Req, #state{}}.
 
 handle(Req, State=#state{}) ->
-    ?DEBUG("~p: in /", [?MODULE]),
+    ?DEBUG("~p:~p: in /", [?MODULE, ?LINE]),
     {ok, Content} = home_dtl:render([]),
     {ok, Req2} = cowboy_req:reply(200, [], Content, Req),
     {ok, Req2, State}.

@@ -1,0 +1,17 @@
+{% extends "base.dtl" %}
+
+{% block content %}
+
+<div class="container-fluid">
+  <div class="row">
+    <br/>
+    <div class="col-md-8 col-md-offset-2 jumbotron">
+      <h2>Admin Area</h2>
+      <hr/>
+      <p>Welcome, {{ user }}</p>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
