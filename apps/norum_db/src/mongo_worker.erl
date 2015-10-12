@@ -1,5 +1,6 @@
 -module(mongo_worker).
 -behaviour(gen_server).
+-author ('Hisham Ismail <mhishami@gmail.com').
 
 %% API.
 -export([start_link/0]).
@@ -19,7 +20,7 @@
 -export([
     save/2,             %% save the records
     update/2,           %% update data
-    find_one/2,    %% find user by email
+    find_one/2,         %% find user by email
     test/0              %% test app
 ]).
 

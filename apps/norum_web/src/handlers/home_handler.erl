@@ -1,5 +1,6 @@
 -module(home_handler).
 -behaviour(cowboy_http_handler).
+-author ('Hisham Ismail <mhishami@gmail.com').
 
 -export([init/3]).
 -export([handle/2]).

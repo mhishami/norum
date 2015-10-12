@@ -4,8 +4,10 @@
     {modules, []},
     {registered, [norum_session_sup]},
     {applications, [
-    				kernel,
-    				stdlib
+                    kernel,
+                    stdlib,
+                    mnesia,
+                    lager
     ]},
     {mod, {norum_session_app, []}}
 ]}.

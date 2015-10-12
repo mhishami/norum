@@ -1,17 +1,21 @@
-{application, norum,
- [
-  {description, "Reactive Forum App"},
-  {vsn, "0.1.0"},
-  {registered, []},
-  {modules, []},
-  {applications, [
-                  kernel,
-                  stdlib,
-                  crypto,
-                  sync,
-                  lager,
-                  goldrush
-                 ]},
-  {mod, { norum_app, []}},
-  {env, []}
+{application, norum, [
+    {description, "Reactive Forum App"},
+    {vsn, "0.1.0"},
+    {registered, []},
+    {modules, []},
+    {applications, [
+                    kernel,
+                    stdlib,
+                    crypto,
+                    sync,
+                    lager,
+                    goldrush,
+                    mnesia
+    ]},
+    {mod, { norum_app, []}},
+    {env, [
+        {http, [{port, 8080}]},
+        {pool, [{size, 10}]},
+        {mnesia_dir, "priv/db"}
+    ]}
  ]}.

@@ -1,9 +1,17 @@
 -module(auth_handler).
 -behaviour(cowboy_http_handler).
+-author ('Hisham Ismail <mhishami@gmail.com').
 
 -export([init/3]).
 -export([handle/2]).
 -export([terminate/3]).
+
+-define(DEBUG(Text, Args), lager:log(debug, ?MODULE, Text, Args)).
+-define(SALT, <<"This is supposed to be your salty words">>).
+
+-export([
+        hash_password/1
+]).
 
 -record(state, {
 }).
@@ -17,8 +25,7 @@ handle(Req, State=#state{}) ->
     {QsVals, Req4} = cowboy_req:qs_vals(Req3),
     {ok, PostVals, Req5} = cowboy_req:body_qs(Req4),
 
-    lager:log(debug, ?MODULE, 
-        "~p: Method: ~p, Path: ~p, QsVals: ~p, PostVals: ~p~n", 
+    ?DEBUG("~p: Method: ~p, Path: ~p, QsVals: ~p, PostVals: ~p~n", 
         [?MODULE, Method, Path, QsVals, PostVals]),
 
     {ok, Req6} = process(Method, Path, [QsVals, PostVals], Req5),
@@ -32,7 +39,7 @@ process(<<"POST">>, <<"/auth/login">>, [_, PostVals], Req) ->
     Email = proplists:get_value(<<"email">>, PostVals),
     Password = proplists:get_value(<<"password">>, PostVals),
 
-    lager:log(debug, ?MODULE, "~p: Email: ~p, Password: ~p~n", [?MODULE, Email, Password]),
+    ?DEBUG("~p: Email: ~p, Password: ~p~n", [?MODULE, Email, Password]),
     cowboy_req:reply(302, [{<<"Location">>, <<"/">>}], [], Req);
     
 process(_, _, _, Req) ->
@@ -40,3 +47,8 @@ process(_, _, _, Req) ->
 
 terminate(_Reason, _Req, _State) ->
     ok.
+
+%% ----------------------------------------------------------------------------
+hash_password(Password) ->
+    {ok, Pass} = pbkdf2:pbkdf2(sha, Password, ?SALT, 4096, 20),
+    pbkdf2:to_hex(Pass).
