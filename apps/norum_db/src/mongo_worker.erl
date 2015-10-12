@@ -1,8 +1,8 @@
--module(mongodb_svr).
+-module(mongo_worker).
 -behaviour(gen_server).
 
 %% API.
--export([start_link/1]).
+-export([start_link/0]).
 
 %% gen_server.
 -export([init/1]).
@@ -12,48 +12,50 @@
 -export([terminate/2]).
 -export([code_change/3]).
 
--record(state, {conn, db}).
+-record(state, {}).
 
 %% API.
 %% ----------------------------------------------------------------------------
 -export([
-    save/1,             %% save the records
-    update/1,           %% update data
-    find_by_email/1,    %% find user by email
+    save/2,             %% save the records
+    update/2,           %% update data
+    find_one/2,    %% find user by email
     test/0              %% test app
 ]).
 
-save(Data) ->
-    gen_server:call(?MODULE, {save, Data}).
+save(Db, Data) ->
+    gen_server:call(?MODULE, {save, Db, Data}).
 
-update(Data) when is_map(Data) ->
-    gen_server:call(?MODULE, {update, Data}).
+update(Db, Data) when is_map(Data) ->
+    gen_server:call(?MODULE, {update, Db, Data}).
 
-find_by_email(Email) when is_binary(Email) ->
-    gen_server:call(?MODULE, {find_by_email, Email}).
+find_one(Db, Selector) ->
+    gen_server:call(?MODULE, {find_one, Db, Selector}).
 
 %% gen_server implementation.
 %% ----------------------------------------------------------------------------
-start_link(Args) ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, Args, []).
+start_link() ->
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %% gen_server.
-init(Database) ->
-    {ok, Conn} = mongo:connect([{database, Database}]),
-    {ok, #state{conn = Conn, db = Database}}.
+init([]) ->
+    {ok, #state{}}.
 
-handle_call({save, Data}, _From, State) ->
-    Reply = mongo:insert(State#state.conn, State#state.db, Data),
+handle_call({save, Db, Data}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Db),
+    Reply = mongo:insert(Conn, Db, Data),
     {reply, {ok, Reply}, State};
 
-handle_call({update, Data}, _From, State) ->
+handle_call({update, Db, Data}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Db),
     Command = {<<"$set">>, Data},
     Id = maps:get(<<"_id">>, Data),
-    Reply = mongo:update(State#state.conn, State#state.db, {<<"_id">>, Id}, Command),
+    Reply = mongo:update(Conn, Db, {<<"_id">>, Id}, Command),
     {reply, {ok, Reply}, State};
 
-handle_call({find_by_email, Email}, _From, State) ->
-    Res = mongo:find_one(State#state.conn, State#state.db, {<<"email">>, Email}),
+handle_call({find_one, Db, Selector}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Db),
+    Res = mongo:find_one(Conn, Db, Selector),
     Reply = case maps:size(Res) of
                 0 -> {error, not_found};
                 _ -> {ok, Res}

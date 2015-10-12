@@ -1,10 +1,7 @@
 {application, norum_db, [
     {description, "Database for Norum"},
     {vsn, "0.1.0"},
-    {modules, [
-                'norum_db_app',
-                'norum_db_sup'
-    ]},
+    {modules, []},
     {registered, [norum_db_sup]},
     {applications, [
                     kernel,

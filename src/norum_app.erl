@@ -12,8 +12,8 @@
 start(_StartType, _StartArgs) ->
     application:start(sync),
     application:ensure_all_started(lager),
+    application:ensure_all_started(mongodb),    
     application:ensure_all_started(cowboy),
-    application:ensure_all_started(mongodb),
     application:start(erlydtl),
     application:start(merl),
 

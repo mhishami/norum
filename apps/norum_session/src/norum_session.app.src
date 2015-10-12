@@ -1,8 +1,11 @@
 {application, norum_session, [
     {description, "Session Server for Norum"},
     {vsn, "0.1.0"},
-    {modules, ['norum_session_app','norum_session_sup']},
+    {modules, []},
     {registered, [norum_session_sup]},
-    {applications, [kernel,stdlib]},
+    {applications, [
+    				kernel,
+    				stdlib
+    ]},
     {mod, {norum_session_app, []}}
 ]}.
