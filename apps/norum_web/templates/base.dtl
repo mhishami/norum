@@ -43,8 +43,9 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav navbar-right">
+            <li><a href="/adm/users">Admin</a></li>
             {% if user %}
-            <li><a href="/auth/logout">Logout</a></li>
+            <li><a href="/auth/logout">Logout ({{ user }})</a></li>
             {% else %}
             <li><a href="/auth/register">Register</a></li>
             <li><a href="/auth/login">Login</a></li>

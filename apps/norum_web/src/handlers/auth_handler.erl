@@ -19,24 +19,26 @@ handle(Req, State=#state{}) ->
     {Path, Req3} = cowboy_req:path(Req2),
     {QsVals, Req4} = cowboy_req:qs_vals(Req3),
     {ok, PostVals, Req5} = cowboy_req:body_qs(Req4),
+    {Sid, Req6} = cowboy_req:cookie(<<"sid">>, Req5),
 
-    ?DEBUG("~p:~p: Method: ~p, Path: ~p, QsVals: ~p, PostVals: ~p~n", 
-        [?MODULE, ?LINE, Method, Path, QsVals, PostVals]),
+    ?DEBUG("Method: ~p, Path: ~p, QsVals: ~p, PostVals: ~p~n", 
+        [Method, Path, QsVals, PostVals]),
 
-    {ok, Req6} = process(Method, Path, [QsVals, PostVals], Req5),
-    {ok, Req6, State}.
+    {ok, Req7} = process(Method, Path, [QsVals, PostVals, Sid], Req6),
+    {ok, Req7, State}.
 
 process(<<"GET">>, <<"/auth/login">>, _, Req) ->
+    % ?DEBUG("Authenticating user, Req= ~p~n", [Req]),
     {ok, Content} = login_dtl:render([]),
     cowboy_req:reply(200, [], Content, Req);
 
-process(<<"POST">>, <<"/auth/login">>, [_, PostVals], Req) ->
+process(<<"POST">>, <<"/auth/login">>, [_, PostVals, _], Req) ->
     Email = proplists:get_value(<<"email">>, PostVals),
     Password = proplists:get_value(<<"password">>, PostVals),
-    ?DEBUG("~p:~p: Email: ~p, Password: ~p~n", [?MODULE, ?LINE, Email, Password]),
+    ?DEBUG("Email: ~p, Password: ~p~n", [Email, Password]),
 
     Res = mongo_worker:find_one(?DB_USER, {<<"email">>, Email}),
-    ?DEBUG("~p:~p: Db Result = ~p~n", [?MODULE, ?LINE, Res]),
+    ?DEBUG("Db Result = ~p~n", [Res]),
     case Res of
         {error, not_found} ->
             %% redirect to registration
@@ -52,7 +54,7 @@ process(<<"POST">>, <<"/auth/login">>, [_, PostVals], Req) ->
                     Req2 = cowboy_req:set_resp_cookie(<<"sid">>, Sid, 
                         [{path, <<"/">>}, {max_age, 3600}], Req),
                     %% redirect
-                    cowboy_req:reply(302, [{<<"Location">>, <<"/adm">>}], [], Req2);
+                    cowboy_req:reply(302, [{<<"Location">>, ?PATH_ADM}], [], Req2);
                 error ->
                     {ok, Content} = login_dtl:render([
                             {error, "Username, or password is invalid"},
@@ -66,8 +68,8 @@ process(<<"GET">>, <<"/auth/register">>, _, Req) ->
     {ok, Content} = register_dtl:render([]),
     cowboy_req:reply(200, [], Content, Req);
 
-process(<<"POST">>, <<"/auth/register">> = Action, [_, PostVals], Req) ->
-    ?DEBUG("~p: ~p, PostVals = ~p~n", [?MODULE, Action, PostVals]),
+process(<<"POST">>, <<"/auth/register">> = Action, [_, PostVals, _], Req) ->
+    ?DEBUG("Action=~p, PostVals = ~p~n", [Action, PostVals]),
 
     Name = proplists:get_value(<<"name">>, PostVals),
     Email = proplists:get_value(<<"email">>, PostVals),
@@ -86,7 +88,7 @@ process(<<"POST">>, <<"/auth/register">> = Action, [_, PostVals], Req) ->
         _ ->
             %% save the user
             User = users:new(Name, Email, web_util:hash_password(Password)),
-            ?DEBUG("~p: ~p, User = ~p~n", [?MODULE, Action, User]),
+            ?DEBUG("Action= ~p, User = ~p~n", [Action, User]),
             case mongo_worker:save(?DB_USER, User) of
                 {ok, _} ->
                     cowboy_req:reply(302, [{<<"Location">>, <<"/">>}], [], Req);
@@ -99,9 +101,10 @@ process(<<"POST">>, <<"/auth/register">> = Action, [_, PostVals], Req) ->
 
     end;
 
-process(<<"GET">>, <<"/auth/logout">>, _, Req) ->
+process(<<"GET">>, <<"/auth/logout">>, [_, _, Sid], Req) ->
     %% clear cookies
-    ?DEBUG("~p:~p: Clearing cookies...~n", [?MODULE, ?LINE]),
+    ?DEBUG("Clearing cookies, Sid= ~p~n", [Sid]),
+    session_worker:del_cookies(Sid),
     Req2 = cowboy_req:set_resp_cookie(<<"sid">>, <<>>, [{max_age, 0}], Req),
     cowboy_req:reply(302, [{<<"Location">>, <<"/">>}], [], Req2);
 

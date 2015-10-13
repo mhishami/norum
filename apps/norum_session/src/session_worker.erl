@@ -22,6 +22,7 @@
 -export([
         set_cookies/2,
         get_cookies/1,
+        del_cookies/1,
         set_session/3,
         get_session/1
     ]).
@@ -33,6 +34,9 @@ set_cookies(Key, Val) ->
 
 get_cookies(Key) ->
     gen_server:call(?MODULE, {get_cookies, Key}).
+
+del_cookies(Key) ->
+    gen_server:call(?MODULE, {del_cookies, Key}).
 
 set_session(Key, Val, Days) when is_integer(Days) ->
     gen_server:call(?MODULE, {set_session, Key, Val, Days}).
@@ -78,11 +82,16 @@ handle_call({set_cookies, Key, Val}, _From, State) ->
 handle_call({get_cookies, Key}, _From, State) ->
     F = fun() -> mnesia:read({norum_cookies, Key}) end,
     Reply = case catch mnesia:activity(transaction, F) of
-                {'EXIT', _} -> 
-                    {error, undefined};
                 [{norum_cookies, _K, V}] -> 
-                    {ok, V}
+                    {ok, V};
+                _ -> 
+                    {error, undefined}
             end,
+    {reply, Reply, State};
+
+handle_call({del_cookies, Key}, _From, State) ->
+    F = fun() -> mnesia:delete({norum_cookies, Key}) end,
+    Reply = mnesia:activity(transaction, F),
     {reply, Reply, State};
 
 handle_call({set_session, Key, Val, Days}, _From, State) ->

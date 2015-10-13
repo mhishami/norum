@@ -2,6 +2,8 @@
 -behaviour(gen_server).
 -author ('Hisham Ismail <mhishami@gmail.com').
 
+-include("norum_db.hrl").
+
 %% API.
 -export([start_link/0]).
 
@@ -19,19 +21,35 @@
 %% ----------------------------------------------------------------------------
 -export([
     save/2,             %% save the records
-    update/2,           %% update data
-    find_one/2,         %% find user by email
+    update/2,           %% update Doc
+    find_one/2,         %% find first item by selector
+    find/2,             %% find all items by selector
+    find/3,             %% find all items by selector
+    find/4,
+    delete/2,
     test/0              %% test app
 ]).
 
-save(Db, Data) ->
-    gen_server:call(?MODULE, {save, Db, Data}).
+save(Coll, Doc) ->
+    gen_server:call(?MODULE, {save, Coll, Doc}).
 
-update(Db, Data) when is_map(Data) ->
-    gen_server:call(?MODULE, {update, Db, Data}).
+update(Coll, Doc) when is_map(Doc) ->
+    gen_server:call(?MODULE, {update, Coll, Doc}).
 
-find_one(Db, Selector) ->
-    gen_server:call(?MODULE, {find_one, Db, Selector}).
+find_one(Coll, Selector) ->
+    gen_server:call(?MODULE, {find_one, Coll, Selector}).
+
+find(Coll, Selector) ->
+    gen_server:call(?MODULE, {find, Coll, Selector, []}).
+
+find(Coll, Selector, Projector) ->
+    gen_server:call(?MODULE, {find, Coll, Selector, Projector}).
+
+find(Coll, Selector, Projector, Limit) ->
+    gen_server:call(?MODULE, {find, Coll, Selector, Projector, Limit}).
+
+delete(Coll, Selector) ->
+    gen_server:call(?MODULE, {delete, Coll, Selector}).
 
 %% gen_server implementation.
 %% ----------------------------------------------------------------------------
@@ -42,26 +60,45 @@ start_link() ->
 init([]) ->
     {ok, #state{}}.
 
-handle_call({save, Db, Data}, _From, State) ->
-    {ok, Conn} = mongo_pool:get(Db),
-    Reply = mongo:insert(Conn, Db, Data),
+handle_call({save, Coll, Doc}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Coll),
+    Reply = mongo:insert(Conn, Coll, Doc),
     {reply, {ok, Reply}, State};
 
-handle_call({update, Db, Data}, _From, State) ->
-    {ok, Conn} = mongo_pool:get(Db),
-    Command = {<<"$set">>, Data},
-    Id = maps:get(<<"_id">>, Data),
-    Reply = mongo:update(Conn, Db, {<<"_id">>, Id}, Command),
+handle_call({update, Coll, Doc}, _From, State) ->
+    ?DEBUG("Updating Doc= ~p~n", [Doc]),
+    {ok, Conn} = mongo_pool:get(Coll),
+    Id = maps:get(<<"_id">>, Doc),
+    Reply = mongo:update(Conn, Coll, {<<"_id">>, Id}, {<<"$set">>, Doc}),
     {reply, {ok, Reply}, State};
 
-handle_call({find_one, Db, Selector}, _From, State) ->
-    {ok, Conn} = mongo_pool:get(Db),
-    Res = mongo:find_one(Conn, Db, Selector),
+handle_call({find_one, Coll, Selector}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Coll),
+    Res = mongo:find_one(Conn, Coll, Selector),
     Reply = case maps:size(Res) of
                 0 -> {error, not_found};
                 _ -> {ok, Res}
             end,
     {reply, Reply, State};
+
+handle_call({find, Coll, Selector, Projector}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Coll),
+    Cursor = mongo:find(Conn, Coll, Selector, Projector),
+    Res = mc_cursor:rest(Cursor),
+    mc_cursor:close(Cursor),
+    {reply, {ok, Res}, State};
+
+handle_call({find, Coll, Selector, Projector, Limit}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Coll),
+    Cursor = mongo:find(Conn, Coll, Selector, Projector),
+    Res = mc_cursor:take(Cursor, Limit),
+    mc_cursor:close(Cursor),
+    {reply, {ok, Res}, State};
+
+handle_call({delete, Coll, Selector}, _From, State) ->
+    {ok, Conn} = mongo_pool:get(Coll),
+    Reply = mongo:delete(Conn, Coll, Selector),
+    {reply, {ok, Reply}, State};
 
 handle_call(_Request, _From, State) ->
     {reply, ignored, State}.

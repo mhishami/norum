@@ -50,7 +50,7 @@ handle_call({clear_all}, _From, #state{pool=Pool}) ->
     {reply, {ok, Pool}, #state{pool = maps:new()}};
 
 handle_call({get, Db}, _From, #state{pool=Pool}) ->
-    ?DEBUG("ENTER ~p: Db= ~p, Pool= ~p~n", [?MODULE, Db, Pool]),
+    % ?DEBUG("ENTER: Db= ~p, Pool= ~p~n", [Db, Pool]),
 
     {Conn, NewPool} =  
         case catch maps:get(Db, Pool) of
@@ -60,17 +60,17 @@ handle_call({get, Db}, _From, #state{pool=Pool}) ->
 
             ConnsArray ->
                 Index = random:uniform(?SIZE) -1,
-                ?DEBUG("~p: Index= ~p, Array= ~p~n", [?MODULE, Index, ConnsArray]),
+                % ?DEBUG("Index= ~p, Array= ~p~n", [Index, ConnsArray]),
 
                 case catch array:get(Index, ConnsArray) of
                     undefined ->
                         make_one(Pool, Db, Index);
                     C ->
-                        ?DEBUG("~p: Returning existing conn...~n", [?MODULE]),
+                        ?DEBUG("Returning existing conn...~n", []),
                         {C, Pool}
                 end
         end,
-    ?DEBUG("EXIT ~p: NewPool= ~p~n", [?MODULE, NewPool]),
+    % ?DEBUG("EXIT: NewPool= ~p~n", [NewPool]),
     {reply, {ok, Conn}, #state{pool=NewPool}};
 
 handle_call(_Request, _From, State) ->

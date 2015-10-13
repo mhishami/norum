@@ -65,6 +65,7 @@ gen_phrase_name() ->
     <<W1/binary, <<"-">>/binary, W2/binary, <<"-">>/binary, W3/binary>>.
 
 gen_pnr() ->
+    random:seed(erlang:timestamp()),
     gen_pnr(random:uniform(3), <<>>).
 
 gen_pnr(1, Accu) when size(Accu) < 6 ->
